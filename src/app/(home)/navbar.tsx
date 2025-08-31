@@ -47,7 +47,7 @@ const navbarItems = [
 
 export const Navbar = () => {
   const pathName = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   if (pathName)
     return (
