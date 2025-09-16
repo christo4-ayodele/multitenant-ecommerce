@@ -2,13 +2,13 @@ import { Category } from "@/payload-types";
 import Link from "next/link";
 
 interface Props {
-  category: CustomCategory;
+  category: CategoriesGetManyOutput[1];
   isOpen: boolean;
   position: { top: number; left: number };
 }
 
 import React from "react";
-import { CustomCategory } from "../../type";
+import { CategoriesGetManyOutput } from "@/modules/categories/types";
 
 export const SubcategoryMenu = ({ category, isOpen, position }: Props) => {
   if (
