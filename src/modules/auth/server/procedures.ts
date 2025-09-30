@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 
 import { AUTH_COOKIE } from "../constants";
 import { RegisterSchema } from "../schemas";
+import { generateAuthCookie } from "../utils";
 
 export const authRouter = createTRPCRouter({
   session: baseProcedure.query(async ({ ctx }) => {
@@ -65,17 +66,9 @@ export const authRouter = createTRPCRouter({
         });
       }
 
-      const cookies = await getCookies();
-      cookies.set({
-        name: AUTH_COOKIE,
+      await generateAuthCookie({
+        prefix: ctx.db.config.cookiePrefix,
         value: data.token,
-        httpOnly: true,
-        path: "/",
-        // sameSite: "none",
-        // domain: ""
-        // TODO: Ensure cross-domain cookie sharing
-        //  funroad.com // initial cookie
-        // christopher.funroad.com // cookie does not exist here
       });
     }),
 
@@ -102,17 +95,9 @@ export const authRouter = createTRPCRouter({
         });
       }
 
-      const cookies = await getCookies();
-      cookies.set({
-        name: AUTH_COOKIE,
+      await generateAuthCookie({
+        prefix: ctx.db.config.cookiePrefix,
         value: data.token,
-        httpOnly: true,
-        path: "/",
-        // sameSite: "none",
-        // domain: ""
-        // TODO: Ensure cross-domain cookie sharing
-        //  funroad.com // initial cookie
-        // christopher.funroad.com // cookie does not exist here
       });
 
       return data;
