@@ -1,14 +1,18 @@
 import z from 'zod';
 import { type Sort, type Where } from 'payload';
 
+import { DEFAULT_LIMIT } from '@/constants';
+import { Category, Media } from '@/payload-types';
 import { baseProcedure, createTRPCRouter } from '@/trpc/init';
-import { Category } from '@/payload-types';
+
 import { sortValues } from '../search-params';
 
 export const productsRouter = createTRPCRouter({
   getMany: baseProcedure
     .input(
       z.object({
+        cursor: z.number().default(1),
+        limit: z.number().default(DEFAULT_LIMIT),
         category: z.string().nullable().optional(),
         minPrice: z.string().nullable().optional(),
         maxPrice: z.string().nullable().optional(),
@@ -18,7 +22,6 @@ export const productsRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const where: Where = {};
-      console.log('Input received:', input);
 
       let sort: Sort = '-createdAt';
 
@@ -83,7 +86,6 @@ export const productsRouter = createTRPCRouter({
         }
       }
 
-      console.log('Final sort value:', sort);
       if (input.tags && input.tags.length > 0) {
         where['tags.name'] = {
           in: input.tags,
@@ -94,9 +96,16 @@ export const productsRouter = createTRPCRouter({
         depth: 1, // Populate "category", "image"
         where,
         sort,
+        page: input.cursor,
+        limit: input.limit,
       });
 
-      console.log(data);
-      return data;
+      return {
+        ...data,
+        docs: data.docs.map((doc) => ({
+          ...doc,
+          image: doc.image as Media | null,
+        })),
+      };
     }),
 });
