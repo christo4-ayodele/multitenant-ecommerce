@@ -1,16 +1,15 @@
-import { Category } from "@/payload-types";
-import Link from "next/link";
+import { Category } from '@/payload-types';
+import Link from 'next/link';
 
 interface Props {
   category: CategoriesGetManyOutput[1];
   isOpen: boolean;
-  position: { top: number; left: number };
 }
 
-import React from "react";
-import { CategoriesGetManyOutput } from "@/modules/categories/types";
+import React from 'react';
+import { CategoriesGetManyOutput } from '@/modules/categories/types';
 
-export const SubcategoryMenu = ({ category, isOpen, position }: Props) => {
+export const SubcategoryMenu = ({ category, isOpen }: Props) => {
   if (
     !isOpen ||
     !category.subcategories ||
@@ -19,12 +18,9 @@ export const SubcategoryMenu = ({ category, isOpen, position }: Props) => {
     return null;
   }
 
-  const backgroundColor = category.color || "#F5F5F5";
+  const backgroundColor = category.color || '#F5F5F5';
   return (
-    <div
-      className="fixed z-100"
-      style={{ top: position.top, left: position.left }}
-    >
+    <div className="absolute z-100" style={{ top: '100%', left: 0 }}>
       {/* Invisible bridge to maintain hover */}
       <div className="w-60 h-3" />
       <div

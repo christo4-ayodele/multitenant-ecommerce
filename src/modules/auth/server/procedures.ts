@@ -1,12 +1,12 @@
-import z from "zod";
-import { headers as getHeaders, cookies as getCookies } from "next/headers";
+import z from 'zod';
+import { headers as getHeaders, cookies as getCookies } from 'next/headers';
 
-import { baseProcedure, createTRPCRouter } from "@/trpc/init";
-import { TRPCError } from "@trpc/server";
+import { baseProcedure, createTRPCRouter } from '@/trpc/init';
+import { TRPCError } from '@trpc/server';
 
-import { AUTH_COOKIE } from "../constants";
-import { RegisterSchema } from "../schemas";
-import { generateAuthCookie } from "../utils";
+import { AUTH_COOKIE } from '../constants';
+import { RegisterSchema } from '../schemas';
+import { generateAuthCookie } from '../utils';
 
 export const authRouter = createTRPCRouter({
   session: baseProcedure.query(async ({ ctx }) => {
@@ -26,7 +26,7 @@ export const authRouter = createTRPCRouter({
     .input(RegisterSchema)
     .mutation(async ({ input, ctx }) => {
       const existingData = await ctx.db.find({
-        collection: "users",
+        collection: 'users',
         limit: 1,
         where: {
           username: { equals: input.username },
@@ -37,22 +37,36 @@ export const authRouter = createTRPCRouter({
 
       if (existingUser) {
         throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Username already taken",
+          code: 'BAD_REQUEST',
+          message: 'Username already taken',
         });
       }
 
+      const tenant = await ctx.db.create({
+        collection: 'tenants',
+        data: {
+          name: input.username,
+          slug: input.username,
+          stripeAccountId: 'test',
+        },
+      });
+
       await ctx.db.create({
-        collection: "users",
+        collection: 'users',
         data: {
           email: input.email,
           username: input.username,
           password: input.password, //This will be hashed by payload
+          tenants: [
+            {
+              tenant: tenant.id,
+            },
+          ],
         },
       });
 
       const data = await ctx.db.login({
-        collection: "users",
+        collection: 'users',
         data: {
           email: input.email,
           password: input.password, //This will be hashed by payload
@@ -61,8 +75,8 @@ export const authRouter = createTRPCRouter({
 
       if (!data.token) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Failed to login",
+          code: 'UNAUTHORIZED',
+          message: 'Failed to login',
         });
       }
 
@@ -77,11 +91,11 @@ export const authRouter = createTRPCRouter({
       z.object({
         email: z.string().email(),
         password: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const data = await ctx.db.login({
-        collection: "users",
+        collection: 'users',
         data: {
           email: input.email,
           password: input.password, //This will be hashed by payload
@@ -90,8 +104,8 @@ export const authRouter = createTRPCRouter({
 
       if (!data.token) {
         throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Failed to login",
+          code: 'UNAUTHORIZED',
+          message: 'Failed to login',
         });
       }
 
